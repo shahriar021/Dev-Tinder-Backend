@@ -1,4 +1,5 @@
 const express = require("express");
+const { authCheck } = require("./middlewares/auth");
 
 const app = express();
 
@@ -8,24 +9,23 @@ const app = express();
 //   res.send("yoo yoo from the 23");
 // });
 
-app.use(
-  "/yoo",
-  (req, res, next) => {
-    console.log("route handle 1");
-    res.send("yoo yoo from the server...");
-    next();
-  },
-  [
-    (req, res, next) => {
-      console.log("route handle 2 ");
-      res.send("yoo from 2");
-      next();
-    },
-    (req, res, next) => {
-      console.log("yoo from 3");
-    },
-  ]
-);
+// app.use("/admin/getData", authCheck, (req, res) => {
+//   res.status(200).send("get all data...");
+// });
+
+// app.use("/admin/deleteData", authCheck, (req, res) => {
+//   res.send("deleted data..");
+// });
+
+app.use("/user", (req, res) => {
+  throw new Error("something went wrong.");
+});
+
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.send("something went wrong..");
+  }
+});
 
 app.listen(4000, () => {
   console.log("server is connected...");
