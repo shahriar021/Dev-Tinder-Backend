@@ -7,6 +7,9 @@ const userSchema = mongoose.Schema({
   cell: {
     type: Number,
   },
+  password: {
+    type: String,
+  },
 });
 
 const User = mongoose.model("User", userSchema);
