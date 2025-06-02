@@ -12,7 +12,7 @@ const validateData = (req) => {
   if (!password) {
     throw new Error("no password");
   }
-  if (!validate.isStrongPassword(password)) {
+  if (!password) {
     throw new Error("password is very weak.");
   }
 };
