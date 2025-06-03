@@ -3,6 +3,9 @@ const User = require("../model/User");
 const bcrypt = require("bcrypt");
 const { validateData } = require("../utils/validate");
 const salt = 10;
+const dotenv = require("dotenv");
+dotenv.config();
+const authCheck = require("../middlewares/auth");
 
 const JWT = require("jsonwebtoken");
 
@@ -13,9 +16,7 @@ authRouter.post("/signUp", async (req, res) => {
     validateData(req);
     const { name, cell, password } = req.body;
     const hasP = bcrypt.hashSync(password, salt);
-    console.log(hasP);
     const user = new User({ name, cell, password: hasP });
-    console.log(user);
     await user.save();
     res.send("user added.");
   } catch (err) {
@@ -34,18 +35,17 @@ authRouter.post("/login", async (req, res) => {
       return res.status(404).send("User not found.");
     }
 
-    console.log(user, "user password.");
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       return res.status(401).send("Invalid password.");
     }
     if (isPasswordValid) {
-      const token = await JWT.sign({ id: user._id }, "salamenode123");
-      console.log(token, "token");
+      const token = JWT.sign({ id: user._id }, process.env.JWT_SECRET);
+
       res.cookie("token", token);
-      return res.status(200).send("Login successful.");
+
+      return res.status(200).json({ message: "Login successful.", token });
     }
   } catch (err) {
     console.error("Login error:", err);

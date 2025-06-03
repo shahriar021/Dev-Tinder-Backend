@@ -1,55 +1,23 @@
-// const express = require("express");
-// const connectDb = require("../devTinder/src/config/database");
-// const User = require("../devTinder/src/model/User");
+const express = require("express");
+const connectDb = require("../devTinder/src/config/database");
+const User = require("../devTinder/src/model/User");
+const cookieParser = require("cookie-parser");
 
-// const app = express();
-// app.use(express.json());
+const app = express();
+app.use(express.json());
+app.use(cookieParser());
+const authRouter = require("./src/routes/auth");
+const profileRouter = require("./src/routes/profile");
 
-// // routing is very very important...................
-// // app.get("/yoo/23/:userId", (req, res) => {
-// //   console.log(req.params);
-// //   res.send("yoo yoo from the 23");
-// // });
+app.use("/", authRouter);
+app.use("/", profileRouter);
 
-// // app.use("/admin/getData", authCheck, (req, res) => {
-// //   res.status(200).send("get all data...");
-// // });
-
-// // app.use("/admin/deleteData", authCheck, (req, res) => {
-// //   res.send("deleted data..");
-// // });
-// const authRouter = require("../devTinder/src/routes/auth.js");
-
-// app.use("/", authRouter);
-
-// app.post("/user", (req, res) => {
-//   console.log(req.body);
-//   const user = new User(req.body);
-//   user.save();
-//   res.send("user added.");
-// });
-
-// app.use("/specifcuser", async (req, res) => {
-//   try {
-//     const specificUser = await User.find({ name: "dhruvo   " });
-//     res.status(200).send(specificUser);
-//   } catch (err) {
-//     console.log("relax..");
-//   }
-// });
-
-// app.use("/", (err, req, res, next) => {
-//   if (err) {
-//     res.send("something went wrong..");
-//   }
-// });
-
-// connectDb().then(() => {
-//   console.log("database conncted");
-//   app.listen(4000, () => {
-//     console.log("server is connected...");
-//   });
-// });
+connectDb().then(() => {
+  console.log("database conncted");
+  app.listen(4000, () => {
+    console.log("server is connected...");
+  });
+});
 
 // -------------------------------------------------------------
 
@@ -127,63 +95,63 @@
 // });
 // --------------------------------------------------------------------------------
 
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-const connectDb = require("../devTinder/src/config/database");
-const Message = require("../devTinder/src/model/Message"); // ✅ We'll create this
+// const express = require("express");
+// const http = require("http");
+// const { Server } = require("socket.io");
+// const cors = require("cors");
+// const connectDb = require("../devTinder/src/config/database");
+// const Message = require("../devTinder/src/model/Message"); // ✅ We'll create this
 
-const app = express();
-const server = http.createServer(app);
+// const app = express();
+// const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: "*", // allow all origins for testing
-    methods: ["GET", "POST"],
-  },
-});
+// const io = new Server(server, {
+//   cors: {
+//     origin: "*", // allow all origins for testing
+//     methods: ["GET", "POST"],
+//   },
+// });
 
-app.use(cors());
-app.use(express.json());
+// app.use(cors());
+// app.use(express.json());
 
-io.on("connection", (socket) => {
-  console.log("New client connected:", socket.id);
+// io.on("connection", (socket) => {
+//   console.log("New client connected:", socket.id);
 
-  socket.on("join_room", (roomId) => {
-    socket.join(roomId);
-    console.log(`${socket.id} joined room ${roomId}`);
+//   socket.on("join_room", (roomId) => {
+//     socket.join(roomId);
+//     console.log(`${socket.id} joined room ${roomId}`);
 
-    // Send previous messages
-    Message.find()
-      .sort({ timestamp: 1 })
-      .limit(50)
-      .then((messages) => {
-        socket.emit("chat_history", messages);
-      });
-  });
+//     // Send previous messages
+//     Message.find()
+//       .sort({ timestamp: 1 })
+//       .limit(50)
+//       .then((messages) => {
+//         socket.emit("chat_history", messages);
+//       });
+//   });
 
-  socket.on("send_message", async ({ roomId, sender, text }) => {
-    const message = new Message({
-      roomId,
-      sender,
-      text,
-      timestamp: new Date(),
-    });
+//   socket.on("send_message", async ({ roomId, sender, text }) => {
+//     const message = new Message({
+//       roomId,
+//       sender,
+//       text,
+//       timestamp: new Date(),
+//     });
 
-    await message.save(); // ✅ persist it
+//     await message.save(); // ✅ persist it
 
-    io.to(roomId).emit("receive_message", { sender, text });
-  });
+//     io.to(roomId).emit("receive_message", { sender, text });
+//   });
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log("Client disconnected:", socket.id);
+//   });
+// });
 
-connectDb().then(() => {
-  console.log("database connected");
-  server.listen(4000, () => {
-    console.log("server running on port 4000...");
-  });
-});
+// connectDb().then(() => {
+//   console.log("database connected");
+//   server.listen(4000, () => {
+//     console.log("server running on port 4000...");
+//   });
+// });

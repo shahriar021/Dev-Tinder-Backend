@@ -12,7 +12,7 @@ post/request/send/ignored/:userID
 post/requiret/review/accepted/:requirestID
 post/requiret/review/rejected/:requestID
 
-get/connections
+get user/connections
 get/requiest/received
 get/feed
 
