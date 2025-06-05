@@ -1,4 +1,5 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 
 const profileRouter = express.Router();
 const { authCheck } = require("../middlewares/auth");
@@ -17,6 +18,43 @@ profileRouter.use("/specifcuser", authCheck, async (req, res) => {
   } catch (err) {
     console.error("Error in /specifcuser:", err);
     res.status(500).send("Something went wrong.");
+  }
+});
+
+profileRouter.patch("/profile/edit", authCheck, async (req, res) => {
+  try {
+    const loggedinuser = req.user;
+
+    console.log(
+      Object.keys(req.body).forEach(
+        (key) => (loggedinuser[key] = req.body[key])
+      )
+    );
+    // console.log(loggedinuser)
+    await loggedinuser.save();
+    res.json({ message: `${loggedinuser.name} changed his profile` });
+  } catch (err) {
+    res.send("something went werong again.!");
+  }
+});
+
+profileRouter.patch("/profile/password", authCheck, async (req, res) => {
+  try {
+    const loggedinuser = req.user;
+    const isMatchedPassword = await bcrypt.compare(
+      req.body.oldPassword,
+      loggedinuser.password
+    );
+    console.log(isMatchedPassword);
+    if (!isMatchedPassword) {
+      res.send("not matched.");
+    } else {
+      loggedinuser.password = await bcrypt.hash(req.body.newPassword, 10);
+      loggedinuser.save();
+      res.send("password changed.");
+    }
+  } catch (err) {
+    res.send("someting went wrong");
   }
 });
 

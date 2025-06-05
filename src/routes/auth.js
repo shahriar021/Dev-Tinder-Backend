@@ -15,10 +15,11 @@ authRouter.post("/signUp", async (req, res) => {
   try {
     validateData(req);
     const { name, cell, password } = req.body;
-    const hasP = bcrypt.hashSync(password, salt);
+    const hasP =await bcrypt.hash(password, 10);
+    console.log(hasP)
     const user = new User({ name, cell, password: hasP });
     await user.save();
-    res.send("user added.");
+    res.send("user added.",user);
   } catch (err) {
     console.log("some error.", err);
     res.send("some error.");
@@ -52,5 +53,18 @@ authRouter.post("/login", async (req, res) => {
     return res.status(500).send("Internal server error.");
   }
 });
+
+authRouter.post("/logout",async(req,res)=>{
+    try{
+      res.cookie("token",null,{expires:
+        new Date(Date.now())
+        
+      })
+      res.send("logout successfull")
+
+    }catch(err){
+       res.send("something went wrong!")
+    }
+})
 
 module.exports = authRouter;
