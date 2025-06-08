@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../model/User")
+const User = require("../model/User");
 
 const authCheck = async (req, res, next) => {
   const token = req.cookies.token;
@@ -9,8 +9,7 @@ const authCheck = async (req, res, next) => {
 
   try {
     const decodedObj = jwt.verify(token, process.env.JWT_SECRET);
-    const user=await User.findById(decodedObj.id)
-    console.log(user,"in mddleware")
+    const user = await User.findById(decodedObj.id);
     req.user = user;
     next();
   } catch (err) {
