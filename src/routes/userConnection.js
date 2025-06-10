@@ -2,6 +2,7 @@ const express = require("express");
 const { authCheck } = require("../middlewares/auth");
 const userConnectionRouter = express.Router();
 const Connection = require("../model/Connection");
+const User = require("../model/User");
 
 userConnectionRouter.get("/request/review", authCheck, async (req, res) => {
   try {
@@ -42,5 +43,40 @@ userConnectionRouter.get(
     res.json({ data });
   }
 );
+
+userConnectionRouter.get("/feed", authCheck, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    limit = limit > 50 ? 50 : limit;
+    const skip = (page - 1) * limit;
+
+    const connectionRequests = await Connection.find({
+      $or: [{ sender: loggedInUser._id }, { receiver: loggedInUser._id }],
+    }).select("sender  receiver");
+
+    const hideUsersFromFeed = new Set();
+    connectionRequests.forEach((req) => {
+      hideUsersFromFeed.add(req.sender.toString());
+      hideUsersFromFeed.add(req.receiver.toString());
+    });
+
+    const users = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(hideUsersFromFeed) } },
+        { _id: { $ne: loggedInUser._id } },
+      ],
+    })
+      .select("cell name")
+      .skip(skip)
+      .limit(limit);
+
+    res.json({ data: users });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
 module.exports = userConnectionRouter;
